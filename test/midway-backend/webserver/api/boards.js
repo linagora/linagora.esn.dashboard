@@ -1,10 +1,8 @@
-'use strict';
-
 const request = require('supertest');
 const expect = require('chai').expect;
 const MODULE_NAME = 'linagora.esn.seed';
 
-describe('The example API', function() {
+describe('The boards API', function() {
   let user, app;
   const password = 'secret';
 
@@ -41,23 +39,23 @@ describe('The example API', function() {
     });
   });
 
-  describe('GET /example', function() {
+  describe('GET /boards', function() {
     it('should return 401 if not logged in', function(done) {
-      this.helpers.api.requireLogin(app, 'get', '/api/example', done);
+      this.helpers.api.requireLogin(app, 'get', '/api/boards', done);
     });
 
-    it('should return a message', function(done) {
+    it('should return an array', function(done) {
       const self = this;
 
       self.helpers.api.loginAsUser(app, user.emails[0], password, function(err, requestAsMember) {
         if (err) {
           return done(err);
         }
-        const req = requestAsMember(request(app).get('/api/example'));
+        const req = requestAsMember(request(app).get('/api/boards'));
 
         req.expect(200).end(function(err, res) {
           expect(err).to.not.exist;
-          expect(res.body).to.deep.equal({ message: 'controller example' });
+          expect(res.body).to.deep.equal([]);
 
           done();
         });

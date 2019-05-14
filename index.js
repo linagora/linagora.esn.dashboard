@@ -1,11 +1,9 @@
-'use strict';
-
 const AwesomeModule = require('awesome-module');
 const Dependency = AwesomeModule.AwesomeModuleDependency;
 const path = require('path');
 const glob = require('glob-all');
 const FRONTEND_JS_PATH = __dirname + '/frontend/app/';
-const AWESOME_MODULE_NAME = 'linagora.esn.seed';
+const AWESOME_MODULE_NAME = 'linagora.esn.dashboard';
 
 const awesomeModule = new AwesomeModule(AWESOME_MODULE_NAME, {
   dependencies: [
@@ -33,15 +31,12 @@ const awesomeModule = new AwesomeModule(AWESOME_MODULE_NAME, {
     },
 
     deploy: function(dependencies, callback) {
-      // Register the webapp
       const app = require('./backend/webserver/application')(dependencies, this);
 
-      // Register every exposed endpoints
       app.use('/api', this.api.module);
 
       const webserverWrapper = dependencies('webserver-wrapper');
 
-      // Register every exposed frontend scripts
       const frontendJsFilesFullPath = glob.sync([
         FRONTEND_JS_PATH + '**/*.module.js',
         FRONTEND_JS_PATH + '**/!(*spec).js'

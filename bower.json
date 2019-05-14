@@ -1,11 +1,11 @@
 {
-  "name": "linagora.esn.seed",
+  "name": "linagora.esn.dashboard",
   "main": "index.js",
   "version": "0.0.1",
   "authors": [
     "Linagora Folks <openpaas@linagora.com>"
   ],
-  "description": "OpenPaaS generic module template",
+  "description": "OpenPaaS Dashboard",
   "keywords": [
     "safe",
     "openpaas",

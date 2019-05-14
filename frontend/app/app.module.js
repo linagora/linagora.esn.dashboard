@@ -1,12 +1,10 @@
-(function() {
+(function(angular) {
   'use strict';
 
-  var MODULE_NAME = 'linagora.esn.seed';
-
-  angular.module(MODULE_NAME, [
+  angular.module('linagora.esn.dashboard', [
     'ui.router',
     'op.dynamicDirective',
     'restangular',
     'esn.module-registry'
   ]);
-})();
+})(angular);
