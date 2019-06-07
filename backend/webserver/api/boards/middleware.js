@@ -9,7 +9,8 @@ module.exports = dependencies => {
     canCreate,
     canUpdate,
     loadDashboard,
-    loadWidget
+    loadWidget,
+    assertDefaultDashboard
   };
 
   function loadDashboard(req, res, next) {
@@ -81,5 +82,23 @@ module.exports = dependencies => {
 
   function canUpdate(req, res, next) {
     next();
+  }
+
+  function assertDefaultDashboard(req, res, next) {
+    dashboardModule.createDefaultDashboard(req.user)
+      .then(() => next())
+      .catch(err => {
+        const details = 'Can not create default dashboard';
+
+        logger.error(details, err);
+
+        res.status(500).json({
+          error: {
+            code: 500,
+            message: 'Server error',
+            details
+          }
+        });
+      });
   }
 };

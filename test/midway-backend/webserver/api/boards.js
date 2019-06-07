@@ -48,14 +48,17 @@ describe('The boards API', function() {
       this.helpers.api.requireLogin(app, 'get', '/api/boards', done);
     });
 
-    it('should HTTP 200 with an empty array', function(done) {
+    it('should HTTP 200 with default dashboard', function(done) {
       this.helpers.api.loginAsUser(app, user.emails[0], password, (err, requestAsMember) => {
         expect(err).to.not.exist;
         const req = requestAsMember(request(app).get('/api/boards'));
 
         req.expect(200).end((err, res) => {
           expect(err).to.not.exist;
-          expect(res.body).to.deep.equal([]);
+          expect(res.body).to.shallowDeepEqual([{
+            _id: String(user._id),
+            name: 'default'
+          }]);
 
           done();
         });
@@ -83,10 +86,99 @@ describe('The boards API', function() {
 
           req.expect(200).end((err, res) => {
             expect(err).to.not.exist;
-            expect(res.body.length).to.eq(2);
+            expect(res.body.length).to.eq(3);
+            expect(_.find(res.body, { _id: String(user._id) })).to.be.truethy;
             expect(_.find(res.body, { _id: String(dashboards[0]) })).to.be.truethy;
             expect(_.find(res.body, { _id: String(dashboards[1]) })).to.be.truethy;
             expect(_.find(res.body, { _id: String(dashboards[2]) })).to.be.falsy;
+
+            done();
+          });
+        });
+      }
+    });
+
+    it('should HTTP 200 with widgets in the right order when order is defined for widgets', function(done) {
+      const self = this;
+      const dashboard = {
+        name: 'my dashboard',
+        creator: user._id,
+        widgets: {
+          instances: [
+            { id: '2', type: 'email' },
+            { id: '3', type: 'email' },
+            { id: '1', type: 'email' }
+          ],
+          order: ['3', '2', '1']
+        }
+      };
+
+      this.helpers.modules.current.lib.lib.dashboard.create(dashboard)
+        .then(test)
+        .catch(done);
+
+      function test(created) {
+        self.helpers.api.loginAsUser(app, user.emails[0], password, (err, requestAsMember) => {
+          expect(err).to.not.exist;
+          const req = requestAsMember(request(app).get('/api/boards'));
+
+          req.expect(200).end((err, res) => {
+            expect(err).to.not.exist;
+            expect(res.body.length).to.eq(2);
+
+            const dashboard = _.find(res.body, {_id: String(created._id)});
+
+            expect(dashboard).to.exist;
+            expect(dashboard.widgets.instances).to.deep.equals([
+              { id: '3', type: 'email' },
+              { id: '2', type: 'email' },
+              { id: '1', type: 'email' }
+            ]);
+
+            done();
+          });
+        });
+      }
+    });
+
+    it('should HTTP 200 with widgets in the right order when defined and push others at the beginning', function(done) {
+      const self = this;
+      const dashboard = {
+        name: 'my dashboard',
+        creator: user._id,
+        widgets: {
+          instances: [
+            { id: '4', type: 'email' },
+            { id: '2', type: 'email' },
+            { id: '3', type: 'email' },
+            { id: '1', type: 'email' }
+          ],
+          order: ['3', '2', '1']
+        }
+      };
+
+      this.helpers.modules.current.lib.lib.dashboard.create(dashboard)
+        .then(test)
+        .catch(done);
+
+      function test(created) {
+        self.helpers.api.loginAsUser(app, user.emails[0], password, (err, requestAsMember) => {
+          expect(err).to.not.exist;
+          const req = requestAsMember(request(app).get('/api/boards'));
+
+          req.expect(200).end((err, res) => {
+            expect(err).to.not.exist;
+            expect(res.body.length).to.eq(2);
+
+            const dashboard = _.find(res.body, {_id: String(created._id)});
+
+            expect(dashboard).to.exist;
+            expect(dashboard.widgets.instances).to.deep.equals([
+              { id: '4', type: 'email' },
+              { id: '3', type: 'email' },
+              { id: '2', type: 'email' },
+              { id: '1', type: 'email' }
+            ]);
 
             done();
           });
@@ -737,14 +829,14 @@ describe('The boards API', function() {
 
     it('should order widgets and HTTP 200', function(done) {
       const self = this;
-      const order = [2, 1];
+      const order = ['2', '1'];
       const dashboard = {
         name: 'my dashboard',
         creator: user._id,
         widgets: {
           instances: [
-            { id: 1, type: 'email' },
-            { id: 2, type: 'events' }
+            { id: '1', type: 'email' },
+            { id: '2', type: 'events' }
           ]
         }
       };
@@ -770,7 +862,7 @@ describe('The boards API', function() {
       function check(dashboard) {
         return self.helpers.modules.current.lib.lib.dashboard.get(dashboard._id)
           .then(updated => {
-            expect(updated.widgets.order).to.deep.equal(order);
+            expect(JSON.stringify(updated.widgets.order)).to.equal('["2","1"]');
           });
       }
     });
@@ -877,6 +969,56 @@ describe('The boards API', function() {
           .then(updated => {
             expect(updated.widgets.instances.length).to.eql(1);
             expect(updated.widgets.instances[0]).to.shallowDeepEqual({ id: anotherWidgetId });
+          });
+      }
+
+      function testApi(dashboard) {
+        return new Promise((resolve, reject) => {
+          self.helpers.api.loginAsUser(app, user.emails[0], password, (err, requestAsMember) => {
+            expect(err).to.not.exist;
+            requestAsMember(request(app).delete(`/api/boards/${dashboard._id}/widgets/${widgetId}`))
+              .expect(204)
+              .end(err => (err ? reject(err) : resolve(dashboard)));
+          });
+        });
+      }
+    });
+
+    it('should remove widget and from order if defined then HTTP 204', function(done) {
+      const self = this;
+      const anotherWidgetId = 'anotherid';
+      const lostWidgetId = 'lostWidgetId';
+      const dashboard = {
+        name: 'my dashboard',
+        creator: user._id,
+        widgets: {
+          instances: [
+            { id: widgetId, type: 'email' },
+            { id: anotherWidgetId, type: 'email' }
+          ],
+          order: [widgetId, anotherWidgetId, lostWidgetId]
+        }
+      };
+
+      this.helpers.modules.current.lib.lib.dashboard.create(dashboard)
+        .then(preCheck)
+        .then(testApi)
+        .then(postCheck)
+        .then(done)
+        .catch(done);
+
+      function preCheck(dashboard) {
+        expect(dashboard.widgets.instances.length).to.eql(2);
+
+        return dashboard;
+      }
+
+      function postCheck(dashboard) {
+        return self.helpers.modules.current.lib.lib.dashboard.get(dashboard._id)
+          .then(updated => {
+            expect(updated.widgets.instances.length).to.eql(1);
+            expect(updated.widgets.instances[0]).to.shallowDeepEqual({ id: anotherWidgetId });
+            expect(JSON.stringify(updated.widgets.order)).to.eql('["anotherid","lostWidgetId"]');
           });
       }
 

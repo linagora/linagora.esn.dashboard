@@ -11,6 +11,7 @@ module.exports = (dependencies, lib, router, moduleName) => {
 
   router.get('/boards',
     middleware.canList,
+    middleware.assertDefaultDashboard,
     controller.list);
 
   router.put('/boards',

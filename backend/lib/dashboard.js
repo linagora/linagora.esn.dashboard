@@ -15,7 +15,8 @@ module.exports = dependencies => {
     reorderWidgets,
     addWidget,
     removeWidget,
-    updateWidgetSettings
+    updateWidgetSettings,
+    createDefaultDashboard
   };
 
   function list(options = {}) {
@@ -31,6 +32,28 @@ module.exports = dependencies => {
       .limit(+options.limit || DEFAULT_LIMIT)
       .sort({ 'timestamps.creation': -1 })
       .exec();
+  }
+
+  function createDefaultDashboard(user) {
+    const query = {
+      _id: user._id,
+      name: 'default',
+      creator: user
+    };
+
+    return DashboardModel.findByIdAndUpdate(
+      user._id,
+      { $set: query },
+      { new: true, upsert: true, setDefaultsOnInsert: true, passRawResult: true }
+    )
+    .exec()
+    .then(dashboard => {
+      if (dashboard) {
+        pubsub.local.topic(DASHBOARD_EVENTS.CREATED).publish(dashboard);
+      }
+
+      return dashboard;
+    });
   }
 
   function get(dashboardId) {
@@ -162,7 +185,7 @@ module.exports = dependencies => {
    * @param {*} widgetId
    */
   function removeWidget(dashboardId, widgetId) {
-    return DashboardModel.findByIdAndUpdate(dashboardId, { $pull: { 'widgets.instances': { id: widgetId } } })
+    return DashboardModel.findByIdAndUpdate(dashboardId, { $pull: { 'widgets.instances': { id: widgetId }, 'widgets.order': widgetId } })
       .exec()
       .then(updated => {
         pubsub.local.topic(DASHBOARD_EVENTS.UPDATED).publish(updated);
