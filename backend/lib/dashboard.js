@@ -29,7 +29,6 @@ module.exports = dependencies => {
       .find(query)
       .skip(+options.offset || DEFAULT_OFFSET)
       .limit(+options.limit || DEFAULT_LIMIT)
-      .populate('creator')
       .sort({ 'timestamps.creation': -1 })
       .exec();
   }
