@@ -1,10 +1,9 @@
-'use strict';
-
 module.exports = function(dependencies) {
-
   const models = require('./db')(dependencies);
+  const dashboard = require('./dashboard')(dependencies);
 
   return {
-    models
+    models,
+    dashboard
   };
 };

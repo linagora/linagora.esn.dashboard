@@ -2,6 +2,7 @@ const AwesomeModule = require('awesome-module');
 const Dependency = AwesomeModule.AwesomeModuleDependency;
 const path = require('path');
 const glob = require('glob-all');
+const cors = require('cors');
 const FRONTEND_JS_PATH = __dirname + '/frontend/app/';
 const AWESOME_MODULE_NAME = 'linagora.esn.dashboard';
 
@@ -10,6 +11,7 @@ const awesomeModule = new AwesomeModule(AWESOME_MODULE_NAME, {
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.logger', 'logger'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.webserver.wrapper', 'webserver-wrapper'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.db', 'db'),
+    new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.pubsub', 'pubsub'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.webserver.middleware.authorization', 'authorizationMW'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.webserver.middleware.module', 'moduleMW'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.i18n', 'i18n')
@@ -33,6 +35,7 @@ const awesomeModule = new AwesomeModule(AWESOME_MODULE_NAME, {
     deploy: function(dependencies, callback) {
       const app = require('./backend/webserver/application')(dependencies, this);
 
+      app.all('/api/*', cors({ origin: true, credentials: true }));
       app.use('/api', this.api.module);
 
       const webserverWrapper = dependencies('webserver-wrapper');
