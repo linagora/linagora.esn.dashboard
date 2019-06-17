@@ -139,7 +139,7 @@ midway-backend-test:
     - perl -i -pe's/"host":"localhost:8080"/"schemes":["https"],"host":"demo.open-paas.org"/' ./doc/REST_API/swagger/swagger.json
     - cp ./doc/REST_API/swagger/swagger.json /var/www/html
 
-.deploy_dev:
+deploy_dev:
   stage: deploy
   tags:
     - dev.open-paas.org
