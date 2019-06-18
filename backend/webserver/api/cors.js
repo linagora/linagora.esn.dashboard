@@ -13,8 +13,14 @@ module.exports = (dependencies, lib, router, moduleName) => {
     moduleMW.requiresModuleIsEnabledInCurrentDomain(moduleName)
   );
 
-  router.get('/cors/:proxyUrl*', (req, res) => {
-    req.url = req.url.replace('/cors/', '/');
+  router.get('/cors', (req, res) => {
+    const url = req.query.proxy;
+
+    if (!url) {
+      return res.status(400).send();
+    }
+
+    req.url = `/${url}`;
     proxy.emit('request', req, res);
   });
 };
