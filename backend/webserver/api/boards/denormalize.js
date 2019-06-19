@@ -1,13 +1,25 @@
 module.exports = dependencies => {
+  const settings = require('../../../lib/settings')(dependencies);
+
   return {
     denormalizeDashboard,
     denormalizeWidget
   };
 
-  function denormalizeDashboard(dashboard) {
-    dashboard.widgets.instances = orderWidgets(dashboard.widgets);
+  function denormalizeDashboard(dashboard, user) {
+    return settings.getWidgetsSettings({ user })
+      .then(settings => (settings || []))
+      .then(settings => {
+        const widgets = orderWidgets(dashboard.widgets);
 
-    return Promise.resolve(dashboard);
+        dashboard.widgets.instances = widgets.map(widget => {
+          widget.settings = getUpdatedWidgetSettings(widget, getSettings(settings, widget.type));
+
+          return widget;
+        });
+
+        return dashboard;
+      });
   }
 
   function denormalizeWidget(widget) {
@@ -24,5 +36,15 @@ module.exports = dependencies => {
 
       return 1;
     });
+  }
+
+  function getUpdatedWidgetSettings(widget, settings = {}) {
+    return { ...widget.settings, ...settings };
+  }
+
+  function getSettings(settings, type) {
+    const configuration = settings.find(e => e.type === type);
+
+    return configuration ? configuration.settings || {} : {};
   }
 };
