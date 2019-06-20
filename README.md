@@ -57,3 +57,55 @@ Copy the 'modules' array from `$ESN/config/default.json` into `$ESN/config/defau
 ## Run
 
 Once installed, you can start OpenPaaS ESN as usual.
+
+## Configure
+
+In case you want to push configuration for dashboard widgets on the backend (define some default settings), you have to use the configuration API to push configuration into the ESN. A widget can be configured like this:
+
+```json
+{
+  "type": "some.widget",
+  "enabled": false,
+  "configurable": false,
+  "settings": {
+    /* put anything you need as JSON here */
+    "url": "https://open-paas.org/api/
+  }
+}
+```
+
+In order to define the widgets send a HTTP request to the configurations API:
+
+- **Method**: `PUT`
+- **URL**: `'/api/configurations?domain_id=DOMAIN_ID&scope=domain'`
+- **Body**:
+  ```json
+  [
+    {
+      "name": "linagora.esn.dashboard",
+      "configurations": [
+        {
+          "name": "widgets",
+          "value": [
+            {
+              "type": "some.widget",
+              "enabled": false,
+              "configurable": false,
+              "settings": {
+                "url": "https://open-paas.org/api/"
+              }
+            },
+            {
+              "type": "some.other.widget",
+              "enabled": true,
+              "configurable": false,
+              "settings": {
+                "url": "https://open-paas.org/api/"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+  ```

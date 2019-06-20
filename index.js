@@ -12,6 +12,7 @@ const awesomeModule = new AwesomeModule(AWESOME_MODULE_NAME, {
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.webserver.wrapper', 'webserver-wrapper'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.db', 'db'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.pubsub', 'pubsub'),
+    new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.esn-config', 'esn-config'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.webserver.middleware.authorization', 'authorizationMW'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.webserver.middleware.module', 'moduleMW'),
     new Dependency(Dependency.TYPE_NAME, 'linagora.esn.core.i18n', 'i18n')
@@ -55,6 +56,8 @@ const awesomeModule = new AwesomeModule(AWESOME_MODULE_NAME, {
       webserverWrapper.injectLess(AWESOME_MODULE_NAME, [lessFile], 'esn');
 
       webserverWrapper.addApp(AWESOME_MODULE_NAME, app);
+
+      require('./backend/lib/config')(dependencies).register();
 
       return callback();
     }

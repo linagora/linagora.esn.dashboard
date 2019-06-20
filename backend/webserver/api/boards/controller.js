@@ -1,5 +1,5 @@
 module.exports = dependencies => {
-  const logger = dependencies('logger');
+  const { catchError, badRequest } = require('../commons')(dependencies);
   const dashboardModule = require('../../../lib/dashboard')(dependencies);
   const { denormalizeDashboard, denormalizeWidget } = require('./denormalize')(dependencies);
 
@@ -19,7 +19,7 @@ module.exports = dependencies => {
   function list(req, res) {
     dashboardModule.list({ creator: req.user._id })
       .then((dashboards = []) => (dashboards))
-      .then(dashboards => Promise.all(dashboards.map(denormalizeDashboard)))
+      .then(dashboards => Promise.all(dashboards.map(dashboard => denormalizeDashboard(dashboard, req.user))))
       .then(denormalized => res.status(200).json(denormalized))
       .catch(err => catchError(err, res, 'Error while listing dashboards'));
   }
@@ -33,7 +33,7 @@ module.exports = dependencies => {
 
         return dashboard;
       })
-      .then(denormalizeDashboard)
+      .then(dashboard => denormalizeDashboard(dashboard, req.user))
       .then(dashboard => res.status(200).json(dashboard))
       .catch(err => catchError(err, res, 'Error while getting dashboard'));
   }
@@ -48,7 +48,7 @@ module.exports = dependencies => {
     const dashboard = {...req.body, creator: req.user._id };
 
     dashboardModule.create(dashboard)
-      .then(denormalizeDashboard)
+      .then(dashboard => denormalizeDashboard(dashboard, req.user))
       .then(created => res.status(201).json(created))
       .catch(err => catchError(err, res, 'Error while creating widgets'));
   }
@@ -61,7 +61,7 @@ module.exports = dependencies => {
     }
 
     dashboardModule.update(req.params.id, req.body)
-      .then(denormalizeDashboard)
+      .then(dashboard => denormalizeDashboard(dashboard, req.user))
       .then(updated => res.status(200).json(updated))
       .catch(err => {
         if (err.message.match(/is required/)) {
@@ -114,29 +114,5 @@ module.exports = dependencies => {
       .then(denormalizeWidget)
       .then(widget => res.status(200).send(widget))
       .catch(err => catchError(err, res, 'Error while updating widget'));
-  }
-
-  function catchError(err, res, details) {
-    logger.error(details, err);
-
-    res.status(500).json({
-      error: {
-        code: 500,
-        message: 'Server Error',
-        details
-      }
-    });
-  }
-
-  function badRequest(err, res, details) {
-    logger.error('Schema error', err);
-
-    res.status(400).json({
-      error: {
-        code: 400,
-        message: 'Bad request',
-        details
-      }
-    });
   }
 };
