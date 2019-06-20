@@ -185,6 +185,78 @@ describe('The boards API', function() {
         });
       }
     });
+
+    it('should HTTP 200 with updated dashboard widgets settings if settings are defined for widget type', function(done) {
+      const self = this;
+      const dashboard = {
+        name: 'my dashboard',
+        creator: user._id,
+        widgets: {
+          instances: [
+            {
+              id: '2',
+              type: 'rss',
+              settings: {
+                limit: 8,
+                url: 'https://open-paas.org/releases/rss"'
+              }
+            },
+            {
+              id: '1',
+              type: 'email'
+            }
+          ]
+        }
+      };
+
+      const settings = {
+        url: 'https://open-paas.org/news/rss'
+      };
+
+      Promise.all([
+        this.helpers.modules.current.lib.lib.dashboard.create(dashboard),
+        createSettings()
+      ])
+      .then(test)
+      .catch(done);
+
+      function createSettings() {
+        return new Promise((resolve, reject) => {
+          self.helpers.requireBackend('core/esn-config')('widgets').inModule('linagora.esn.dashboard')
+            .store([{ type: 'rss', settings }], err => (err ? reject(err) : resolve()));
+        });
+      }
+
+      function test(created) {
+        self.helpers.api.loginAsUser(app, user.emails[0], password, (err, requestAsMember) => {
+          expect(err).to.not.exist;
+          const req = requestAsMember(request(app).get('/api/boards'));
+
+          req.expect(200);
+          req.end((err, res) => {
+            expect(err).to.not.exist;
+            expect(res.body.length).to.eq(2);
+
+            const dashboard = _.find(res.body, { _id: String(created[0]._id) });
+
+            expect(dashboard).to.exist;
+
+            const emailWidget = _.find(dashboard.widgets.instances, { type: 'email' });
+            const rssWidget = _.find(dashboard.widgets.instances, { type: 'rss' });
+
+            expect(emailWidget).to.exist;
+            expect(emailWidget.settings).to.not.exist;
+
+            expect(rssWidget).to.exist;
+            expect(rssWidget.settings).to.deep.equal({
+              limit: 8,
+              url: settings.url
+            });
+            done();
+          });
+        });
+      }
+    });
   });
 
   describe('PUT /boards', function() {
