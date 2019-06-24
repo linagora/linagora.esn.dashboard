@@ -57,7 +57,7 @@ describe('The boards API', function() {
           expect(err).to.not.exist;
           expect(res.body).to.shallowDeepEqual([{
             _id: String(user._id),
-            name: 'default'
+            name: 'main'
           }]);
 
           done();
