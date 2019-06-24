@@ -11,5 +11,6 @@ module.exports = {
     DELETED: 'dashboard:widget:deleted'
   },
   DEFAULT_LIMIT: 20,
-  DEFAULT_OFFSET: 0
+  DEFAULT_OFFSET: 0,
+  DEFAULT_NAME: 'main'
 };

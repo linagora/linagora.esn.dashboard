@@ -1,5 +1,5 @@
 module.exports = dependencies => {
-  const { DASHBOARD_EVENTS, DEFAULT_LIMIT, DEFAULT_OFFSET } = require('./constants');
+  const { DASHBOARD_EVENTS, DEFAULT_LIMIT, DEFAULT_OFFSET, DEFAULT_NAME } = require('./constants');
   const mongoose = dependencies('db').mongo.mongoose;
   const pubsub = dependencies('pubsub');
   const DashboardModel = mongoose.model('Dashboard');
@@ -37,7 +37,7 @@ module.exports = dependencies => {
   function createDefaultDashboard(user) {
     const query = {
       _id: user._id,
-      name: 'default',
+      name: DEFAULT_NAME,
       creator: user
     };
 
