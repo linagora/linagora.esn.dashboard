@@ -4,7 +4,6 @@
   angular.module('linagora.esn.dashboard', [
     'ui.router',
     'op.dynamicDirective',
-    'restangular',
-    'esn.module-registry'
+    'restangular'
   ]);
 })(angular);
