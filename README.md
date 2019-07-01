@@ -109,3 +109,22 @@ In order to define the widgets send a HTTP request to the configurations API:
     }
   ]
   ```
+
+OpenPaaS may need the URL where the dashboard application is running (frontend from [openpass-dashboard](https://github.com/linagora/openpaas-dashboard)). The URL can be defined by configuration using the configuration API and must be defined in the `configurations` array of the `linagora.esn.dashboard` block as:
+
+- **Method**: `PUT`
+- **URL**: `'/api/configurations?domain_id=DOMAIN_ID&scope=domain'`
+- **Body**:
+  ```json
+  [
+    {
+      "name": "linagora.esn.dashboard",
+      "configurations": [
+        {
+          "name": "applicationUrl",
+          "value": "https://open-paas.org/dashboard/"
+        }
+      ]
+    }
+  ]
+  ```
