@@ -48,7 +48,7 @@ const awesomeModule = new AwesomeModule(AWESOME_MODULE_NAME, {
       const frontendJsFilesUri = frontendJsFilesFullPath.map(function(filepath) {
         return filepath.replace(FRONTEND_JS_PATH, '');
       });
-      const lessFile = path.join(FRONTEND_JS_PATH, 'app.less');
+      const lessFile = path.join(FRONTEND_JS_PATH, 'dashboard.less');
 
       webserverWrapper.injectAngularAppModules(AWESOME_MODULE_NAME, frontendJsFilesUri, AWESOME_MODULE_NAME, ['esn'], {
         localJsFiles: frontendJsFilesFullPath
