@@ -2,6 +2,7 @@ module.exports = dependencies => {
   const { DASHBOARD_EVENTS, DEFAULT_LIMIT, DEFAULT_OFFSET, DEFAULT_NAME } = require('./constants');
   const mongoose = dependencies('db').mongo.mongoose;
   const pubsub = dependencies('pubsub');
+  const esnConfig = dependencies('esn-config');
   const DashboardModel = mongoose.model('Dashboard');
 
   return {
@@ -13,6 +14,7 @@ module.exports = dependencies => {
     update,
     listWidgets,
     reorderWidgets,
+    reorderDashboards,
     addWidget,
     removeWidget,
     updateWidgetSettings,
@@ -136,6 +138,18 @@ module.exports = dependencies => {
 
         return dashboard;
       }
+  }
+
+  /**
+   * Reorder the dashboards
+   *
+   * @param {*} dashboardsOrder: Array of dashboard IDs in the right order
+   */
+  function reorderDashboards(user, dashboardsOrder = []) {
+    return esnConfig('dashboards')
+      .inModule('linagora.esn.dashboard')
+      .forUser(user, true)
+      .set('order', dashboardsOrder);
   }
 
   /**

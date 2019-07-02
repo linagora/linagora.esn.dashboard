@@ -3,8 +3,16 @@ module.exports = dependencies => {
 
   return {
     denormalizeDashboard,
+    denormalizeDashboards,
     denormalizeWidget
   };
+
+  function denormalizeDashboards(dashboards, user) {
+    return settings.getDashboardsSettings({ user })
+      .then(settings => (settings || {}))
+      .then(settings => orderDashboards(dashboards, settings.order))
+      .then(dashboards => Promise.all(dashboards.map(dashboard => denormalizeDashboard(dashboard, user))));
+  }
 
   function denormalizeDashboard(dashboard, user) {
     return settings.getWidgetsSettings({ user })
@@ -30,6 +38,20 @@ module.exports = dependencies => {
     const { order = [], instances = []} = widgets;
 
     return instances.sort((a, b) => {
+      if (order.indexOf(a.id) < order.indexOf(b.id) || order.indexOf(a.id) === -1 || order.indexOf(b.id) === -1) {
+        return -1;
+      }
+
+      return 1;
+    });
+  }
+
+  function orderDashboards(dashboards, order = []) {
+    if (!order.length) {
+      return dashboards;
+    }
+
+    return dashboards.sort((a, b) => {
       if (order.indexOf(a.id) < order.indexOf(b.id) || order.indexOf(a.id) === -1 || order.indexOf(b.id) === -1) {
         return -1;
       }

@@ -1,7 +1,7 @@
 module.exports = dependencies => {
   const { catchError, badRequest } = require('../commons')(dependencies);
   const dashboardModule = require('../../../lib/dashboard')(dependencies);
-  const { denormalizeDashboard, denormalizeWidget } = require('./denormalize')(dependencies);
+  const { denormalizeDashboards, denormalizeDashboard, denormalizeWidget } = require('./denormalize')(dependencies);
 
   return {
     addWidget,
@@ -13,13 +13,14 @@ module.exports = dependencies => {
     create,
     update,
     updateWidgetSettings,
-    reorderWidgets
+    reorderWidgets,
+    reorderDashboards
   };
 
   function list(req, res) {
     dashboardModule.list({ creator: req.user._id })
       .then((dashboards = []) => (dashboards))
-      .then(dashboards => Promise.all(dashboards.map(dashboard => denormalizeDashboard(dashboard, req.user))))
+      .then(dashboards => denormalizeDashboards(dashboards, req.user))
       .then(denormalized => res.status(200).json(denormalized))
       .catch(err => catchError(err, res, 'Error while listing dashboards'));
   }
@@ -107,6 +108,18 @@ module.exports = dependencies => {
     dashboardModule.reorderWidgets(req.params.id, req.body)
       .then(() => res.status(200).send())
       .catch(err => catchError(err, res, 'Error while ordering widgets'));
+  }
+
+  function reorderDashboards(req, res) {
+    if (!req.body || req.body.length === 0) {
+      const message = 'Request body is required';
+
+      return badRequest(new Error(message), res, message);
+    }
+
+    dashboardModule.reorderDashboards(req.user, req.body)
+      .then(() => res.status(200).send())
+      .catch(err => catchError(err, res, 'Error while ordering dashboards'));
   }
 
   function updateWidgetSettings(req, res) {
