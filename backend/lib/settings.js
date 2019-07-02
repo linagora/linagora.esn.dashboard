@@ -15,7 +15,11 @@ module.exports = dependencies => {
       .then(config => (config || []));
   }
 
-  function getDashboardsSettings() {
-    return Promise.resolve({});
-  }
+  function getDashboardsSettings({ user }) {
+    return esnConfig('dashboards')
+      .inModule('linagora.esn.dashboard')
+      .forUser(user, true)
+      .get()
+      .then(config => (config || {}));
+    }
 };

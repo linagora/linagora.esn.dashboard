@@ -18,6 +18,10 @@ module.exports = (dependencies, lib, router, moduleName) => {
     middleware.canCreate,
     controller.create);
 
+  router.patch('/boards/order',
+    middleware.canUpdate,
+    controller.reorderDashboards);
+
   router.get('/boards/:id',
     middleware.loadDashboard,
     middleware.canGet,
