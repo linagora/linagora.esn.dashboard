@@ -14,7 +14,8 @@ module.exports = dependencies => {
     update,
     updateWidgetSettings,
     reorderWidgets,
-    reorderDashboards
+    reorderDashboards,
+    updateWidgetColumns
   };
 
   function list(req, res) {
@@ -127,5 +128,12 @@ module.exports = dependencies => {
       .then(denormalizeWidget)
       .then(widget => res.status(200).send(widget))
       .catch(err => catchError(err, res, 'Error while updating widget'));
+  }
+
+  function updateWidgetColumns(req, res) {
+    dashboardModule.updateWidgetColumns(req.params.id, req.params.wid, req.body.value)
+      .then(denormalizeWidget)
+      .then(widget => res.status(200).send(widget))
+      .catch(err => catchError(err, res, 'Error while updating widget columns'));
   }
 };

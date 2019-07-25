@@ -63,4 +63,10 @@ module.exports = (dependencies, lib, router, moduleName) => {
     middleware.loadWidget,
     middleware.canUpdate,
     controller.updateWidgetSettings);
+
+  router.patch('/boards/:id/widgets/:wid/settings/columns',
+    middleware.loadDashboard,
+    middleware.loadWidget,
+    middleware.canUpdate,
+    controller.updateWidgetColumns);
 };

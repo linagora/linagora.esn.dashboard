@@ -18,6 +18,7 @@ module.exports = dependencies => {
     addWidget,
     removeWidget,
     updateWidgetSettings,
+    updateWidgetColumns,
     createDefaultDashboard
   };
 
@@ -240,6 +241,44 @@ module.exports = dependencies => {
       }
 
       widget.settings = settings;
+
+      return dashbboard.save();
+    }
+
+    function publish(dashbboard) {
+      pubsub.local.topic(DASHBOARD_EVENTS.UPDATED).publish(dashbboard);
+    }
+  }
+
+  function updateWidgetColumns(dashboardId, widgetId, columns) {
+    if (!dashboardId) {
+      return Promise.reject(new Error('dashboardId is required'));
+    }
+
+    if (!widgetId) {
+      return Promise.reject(new Error('widgetId is required'));
+    }
+
+    return DashboardModel.findById(dashboardId)
+      .exec()
+      .then(dashboard => {
+        if (!dashboard) {
+          throw new Error('Dashboard not found');
+        }
+
+        return dashboard;
+      })
+      .then(_updateWidgetColumns)
+      .then(publish);
+
+    function _updateWidgetColumns(dashbboard) {
+      const widget = dashbboard.widgets.instances.find((widget => widget.id === widgetId));
+
+      if (!widget) {
+        return Promise.reject(new Error('Widget has not been found'));
+      }
+
+      widget.settings = {...widget.settings, ...{ columns }};
 
       return dashbboard.save();
     }
