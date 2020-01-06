@@ -6,7 +6,10 @@ module.exports = (dependencies, lib, router, moduleName) => {
   const proxy = corsAnywhere.createServer({
     originWhitelist: [],
     requireHeaders: [],
-    removeHeaders: []
+    removeHeaders: [],
+    httpProxyOptions: {
+      secure: false
+    }
   });
 
   router.all('/cors*',
