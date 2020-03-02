@@ -35,7 +35,7 @@
     "linagora-rse": "linagora/openpaas-esn#master",
     "mocha": "5.2.0",
     "mockery": "1.7.0",
-    "mongoose": "4.7.1",
+    "mongoose": "5.7.12",
     "phantomjs-prebuilt": "2.1.16",
     "rewire": "2.5.2",
     "sinon": "1.17.5",
