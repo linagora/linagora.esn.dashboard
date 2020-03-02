@@ -23,6 +23,11 @@ module.exports = dependencies => {
           type: 'string',
           minLength: 1
         },
+        // defines if this widget must be provisionned in the default dashboard
+        default: {
+          type: 'boolean',
+          default: false
+        },
         enabled: {
           type: 'boolean',
           default: true
