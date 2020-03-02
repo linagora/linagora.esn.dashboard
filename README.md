@@ -65,14 +65,19 @@ In case you want to push configuration for dashboard widgets on the backend (def
 ```json
 {
   "type": "some.widget",
-  "enabled": false,
-  "configurable": false,
+  "default": true,
   "settings": {
     /* put anything you need as JSON here */
     "url": "https://open-paas.org/api/
   }
 }
 ```
+
+Where:
+
+- `type` (String, required): The type of widget as defined in the frontend. Everything will be ignored if no widgets are found with this type within the application.
+- `default` (Boolean, optional): Display the widget in the default user dashboard. Defaults to `false`.
+- `settings` (JSON, optional): Defines the widget configuration. Even if configured on the frontend or by the user, the settings defined here have higher priority than everything else.
 
 In order to define the widgets send a HTTP request to the configurations API:
 
@@ -89,16 +94,13 @@ In order to define the widgets send a HTTP request to the configurations API:
           "value": [
             {
               "type": "some.widget",
-              "enabled": false,
-              "configurable": false,
+              "default": true,
               "settings": {
                 "url": "https://open-paas.org/api/"
               }
             },
             {
               "type": "some.other.widget",
-              "enabled": true,
-              "configurable": false,
               "settings": {
                 "url": "https://open-paas.org/api/"
               }

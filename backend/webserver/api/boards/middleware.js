@@ -85,7 +85,8 @@ module.exports = dependencies => {
   }
 
   function assertDefaultDashboard(req, res, next) {
-    dashboardModule.createDefaultDashboard(req.user)
+    dashboardModule.checkDefaultDashboardExists(req.user)
+      .then(exists => (exists ? Promise.resolve() : dashboardModule.createDefaultDashboard(req.user)))
       .then(() => next())
       .catch(err => {
         const details = 'Can not create default dashboard';

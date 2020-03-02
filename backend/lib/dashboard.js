@@ -1,3 +1,5 @@
+const uuidV4 = require('uuid').v4;
+
 module.exports = dependencies => {
   const { DASHBOARD_EVENTS, DEFAULT_LIMIT, DEFAULT_OFFSET, DEFAULT_NAME } = require('./constants');
   const mongoose = dependencies('db').mongo.mongoose;
@@ -19,7 +21,8 @@ module.exports = dependencies => {
     removeWidget,
     updateWidgetSettings,
     updateWidgetColumns,
-    createDefaultDashboard
+    createDefaultDashboard,
+    checkDefaultDashboardExists
   };
 
   function list(options = {}) {
@@ -37,26 +40,33 @@ module.exports = dependencies => {
       .exec();
   }
 
+  function checkDefaultDashboardExists(user) {
+    return getDashboardForUser(user._id, user._id).then(dashboard => !!dashboard);
+  }
+
   function createDefaultDashboard(user) {
-    const query = {
-      _id: user._id,
-      name: DEFAULT_NAME,
-      creator: user
-    };
+    return getDefaultWidgets(user)
+      .then(defaultWidgets => defaultWidgets || [])
+      .then(defaultWidgets => defaultWidgets.map(widget => ({ ...widget, ...{ id: uuidV4() } })))
+      .then(defaultWidgets => ({
+        _id: user._id,
+        name: DEFAULT_NAME,
+        creator: user,
+        widgets: {
+          instances: defaultWidgets
+        }
+      }))
+      .then(dashboard => create(dashboard));
+  }
 
-    return DashboardModel.findByIdAndUpdate(
-      user._id,
-      { $set: query },
-      { new: true, upsert: true, setDefaultsOnInsert: true, passRawResult: true }
-    )
-    .exec()
-    .then(dashboard => {
-      if (dashboard) {
-        pubsub.local.topic(DASHBOARD_EVENTS.CREATED).publish(dashboard);
-      }
-
-      return dashboard;
-    });
+  function getDefaultWidgets(user) {
+    return esnConfig('widgets')
+      .inModule('linagora.esn.dashboard')
+      .forUser(user, true)
+      .get()
+      .then(widgets => widgets || [])
+      .then(widgets => widgets.filter(widget => widget.default))
+      .catch(() => []);
   }
 
   function get(dashboardId) {

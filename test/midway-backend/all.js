@@ -7,10 +7,11 @@ const path = require('path');
 const testConfig = require('../config/servers-conf');
 const basePath = path.resolve(__dirname + '/../../node_modules/linagora-rse');
 const backendPath = path.normalize(__dirname + '/../../backend');
-const MODULE_NAME = 'linagora.esn.seed';
-let rse;
+const MODULE_NAME = 'linagora.esn.dashboard';
 
 before(function(done) {
+  let rse;
+
   chai.use(require('chai-shallow-deep-equal'));
   chai.use(require('sinon-chai'));
   chai.use(require('chai-as-promised'));
@@ -21,8 +22,8 @@ before(function(done) {
     backendPath: backendPath,
     fixtures: path.resolve(basePath, 'test/midway-backend/fixtures'),
     mongoUrl: testConfig.mongodb.connectionString,
-    initCore(callback) {
-      rse.core.init(() => { callback && process.nextTick(callback); });
+    initCore(callback = () => {}) {
+      rse.core.init(() => process.nextTick(callback));
     }
   };
 
@@ -45,11 +46,11 @@ before(function(done) {
   const nodeModulesPath = path.normalize(
     path.join(__dirname, '../../node_modules/')
   );
-  const nodeModulesLoader = manager.loaders.filesystem(nodeModulesPath, true);
   const loader = manager.loaders.code(require('../../index.js'), true);
+  const nodeModulesLoader = manager.loaders.filesystem(nodeModulesPath, true);
 
-  manager.appendLoader(nodeModulesLoader);
   manager.appendLoader(loader);
+  manager.appendLoader(nodeModulesLoader);
 
   loader.load(MODULE_NAME, done);
 });

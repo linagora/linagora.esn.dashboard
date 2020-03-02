@@ -35,7 +35,7 @@
     "linagora-rse": "linagora/openpaas-esn#master",
     "mocha": "5.2.0",
     "mockery": "1.7.0",
-    "mongoose": "4.7.1",
+    "mongoose": "5.7.12",
     "phantomjs-prebuilt": "2.1.16",
     "rewire": "2.5.2",
     "sinon": "1.17.5",
@@ -55,7 +55,7 @@
   "author": "Linagora R&D",
   "license": "AGPL-3.0",
   "engines": {
-    "node": ">=8"
+    "node": ">=10.12.0"
   },
   "dependencies": {
     "async": "2.0.1",
@@ -65,6 +65,7 @@
     "express": "4.16.3",
     "glob-all": "3.1.0",
     "lodash": "4.17.10",
-    "q": "1.4.1"
+    "q": "1.4.1",
+    "uuid": "3.1.0"
   }
 }

@@ -6,41 +6,40 @@ const ObjectId = require('bson').ObjectId;
 const MODULE_NAME = 'linagora.esn.dashboard';
 
 describe('The boards API', function() {
-  let user, otherUser, app, dashboardId, widgetId;
+  let helpers, user, otherUser, app, dashboardId, widgetId, models;
   const password = 'secret';
+
+  before(function(done) {
+    helpers = this.helpers;
+    helpers.modules.initMidway(MODULE_NAME, helpers.callbacks.noErrorAnd(done));
+  });
 
   beforeEach(function(done) {
     dashboardId = new ObjectId();
     widgetId = '123';
 
-    this.helpers.modules.initMidway(MODULE_NAME, err => {
-      expect(err).to.not.exist;
+    const application = require(this.testEnv.backendPath + '/webserver/application')(this.helpers.modules.current.deps);
+    const api = require(this.testEnv.backendPath + '/webserver/api')(this.helpers.modules.current.deps, this.helpers.modules.current.lib.lib);
 
-      const application = require(this.testEnv.backendPath + '/webserver/application')(this.helpers.modules.current.deps);
-      const api = require(this.testEnv.backendPath + '/webserver/api')(this.helpers.modules.current.deps, this.helpers.modules.current.lib.lib);
+    application.use(require('body-parser').json());
+    application.use('/api', api);
 
-      application.use(require('body-parser').json());
-      application.use('/api', api);
+    app = this.helpers.modules.getWebServer(application);
 
-      app = this.helpers.modules.getWebServer(application);
+    this.helpers.api.applyDomainDeployment('foo_and_bar_users', (err, deployedModels) => {
+      if (err) {
+        return done(err);
+      }
+      models = deployedModels;
+      user = models.users[0];
+      otherUser = models.users[1];
 
-      this.helpers.api.applyDomainDeployment('foo_and_bar_users', (err, models) => {
-        if (err) {
-          return done(err);
-        }
-        user = models.users[0];
-        otherUser = models.users[1];
-
-        done();
-      });
+      done();
     });
   });
 
   afterEach(function(done) {
-    this.helpers.mongo.dropDatabase(err => {
-      if (err) return done(err);
-      this.testEnv.core.db.mongo.mongoose.connection.close(done);
-    });
+    helpers.api.cleanDomainDeployment(models, done);
   });
 
   describe('GET /boards', function() {
